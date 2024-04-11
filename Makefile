@@ -25,8 +25,8 @@ ifneq ($(filter arm%,$(OS_ARCH)),)
 endif
 
 # env variables
-KIOTA_VERSION ?= "v1.12.0"
-HORREUM_BRANCH ?= "0.12.x"
+KIOTA_VERSION ?= "v1.13.0"
+HORREUM_BRANCH ?= "master"
 HORREUM_OPENAPI_PATH ?= "https://raw.githubusercontent.com/Hyperfoil/Horreum/${HORREUM_BRANCH}/docs/site/content/en/openapi/openapi.yaml"
 GENERATED_CLIENT_PATH = "${PROJECT_PATH}/src/horreum/raw_client"
 OPENAPI_PATH = "${PROJECT_PATH}/openapi"
