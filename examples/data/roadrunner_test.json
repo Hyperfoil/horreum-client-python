@@ -1,0 +1,7 @@
+{
+  "name": "Roadrunner Test",
+  "description": "acme.com benchmark",
+  "owner": "dev-team",
+  "access": "PUBLIC",
+  "fingerprint_labels": [ "benchmark_test" ]
+}

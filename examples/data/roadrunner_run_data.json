@@ -1,0 +1,17 @@
+{
+    "$schema": "urn:acme:benchmark:0.1",
+    "something": "This gets lost by the transformer",
+    "buildHash": "defec8eddeadbeafcafebabeb16b00b5",
+    "results": [
+      {
+        "test": "Foo",
+        "requests": 123,
+        "duration": 10
+      },
+      {
+        "test": "Bar",
+        "requests": 456,
+        "duration": 20
+      }
+    ]
+}

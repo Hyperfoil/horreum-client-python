@@ -78,3 +78,10 @@ generate: tools ${OPENAPI_SPEC} ## Generate the Horreum client
 		set -e ;\
 		${PROJECT_BIN}/kiota generate -l python -c HorreumRawClient -n raw_client -d ${OPENAPI_PATH}/openapi.yaml -o ${GENERATED_CLIENT_PATH} ;\
 	}
+
+
+##@ Example
+
+.PHONY: run-example
+run-example: ## Run basic example
+	cd examples && python basic_example.py
