@@ -57,10 +57,10 @@ Here a very simple example:
 >>> import asyncio
 
 # Import the constructor function
->>> from horreum.horreum_client import new_horreum_client
+>>> from horreum.horreum_client import new_horreum_client, HorreumCredentials
 
 # Initialize the client
->>> client = await new_horreum_client(base_url="http://localhost:8080", username="..", password="..")
+>>> client = await new_horreum_client(base_url="http://localhost:8080", credentials=HorreumCredentials(username=username, password=password))
 
 # Call the api using the underlying raw client, in this case retrieve the Horreum server version
 >>> await client.raw_client.api.config.version.get()
@@ -72,7 +72,7 @@ The previous api call is equivalent to the following `cURL`:
 curl --silent -X 'GET' 'http://localhost:8080/api/config/version' -H 'accept: application/json' | jq '.'
 ```
 
-Other examples can be found in the [test folder](../test), for instance:
+Other examples can be found in the [examples folder](../examples), for instance:
 
 ```bash
 # Import Horreum Test model

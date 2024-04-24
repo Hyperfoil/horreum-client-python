@@ -3,14 +3,14 @@ import json
 
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 
-from horreum import new_horreum_client
+from horreum import HorreumCredentials, new_horreum_client
 from horreum.horreum_client import HorreumClient
+from horreum.raw_client.api.run.test.test_request_builder import TestRequestBuilder
 from horreum.raw_client.models.extractor import Extractor
 from horreum.raw_client.models.run import Run
 from horreum.raw_client.models.schema import Schema
 from horreum.raw_client.models.test import Test
 from horreum.raw_client.models.transformer import Transformer
-from horreum.raw_client.api.run.test.test_request_builder import TestRequestBuilder
 
 base_url = "http://localhost:8080"
 username = "user"
@@ -112,7 +112,7 @@ async def delete_all(client: HorreumClient):
 
 
 async def example():
-    client = await new_horreum_client(base_url, username, password)
+    client = await new_horreum_client(base_url, credentials=HorreumCredentials(username=username, password=password))
 
     if cleanup_data:
         await delete_all(client)

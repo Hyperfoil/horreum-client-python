@@ -6,13 +6,17 @@ from kiota_abstractions.headers_collection import HeadersCollection
 from kiota_abstractions.method import Method
 from kiota_abstractions.request_information import RequestInformation
 
+from horreum import HorreumCredentials, ClientConfiguration
 from horreum.horreum_client import new_horreum_client, HorreumClient
 from horreum.raw_client.api.test.test_request_builder import TestRequestBuilder
 from horreum.raw_client.models.protected_type_access import ProtectedType_access
 from horreum.raw_client.models.test import Test
 
-username = "user"
-password = "secret"
+DEFAULT_CONNECTION_TIMEOUT: int = 30
+DEFAULT_REQUEST_TIMEOUT: int = 100
+
+USERNAME = "user"
+PASSWORD = "secret"
 
 
 @pytest.fixture()
@@ -35,7 +39,23 @@ async def anonymous_client() -> HorreumClient:
 @pytest.fixture()
 async def authenticated_client() -> HorreumClient:
     print("Setting up authenticated client")
-    client = await new_horreum_client(base_url="http://localhost:8080", username=username, password=password)
+    client = await new_horreum_client(base_url="http://localhost:8080",
+                                      credentials=HorreumCredentials(username=USERNAME, password=PASSWORD))
+    try:
+        await client.raw_client.api.config.version.get()
+    except httpx.ConnectError:
+        pytest.fail("Unable to fetch Horreum version, is Horreum running in the background?")
+    return client
+
+
+@pytest.fixture()
+async def custom_authenticated_client() -> HorreumClient:
+    print("Setting up custom authenticated client")
+    timeout = httpx.Timeout(DEFAULT_REQUEST_TIMEOUT, connect=DEFAULT_CONNECTION_TIMEOUT)
+    client = await new_horreum_client(base_url="http://localhost:8080",
+                                      credentials=HorreumCredentials(username=USERNAME, password=PASSWORD),
+                                      client_config=ClientConfiguration(
+                                          http_client=httpx.AsyncClient(timeout=timeout, http2=True, verify=False)))
     try:
         await client.raw_client.api.config.version.get()
     except httpx.ConnectError:
@@ -68,7 +88,7 @@ async def test_check_auth_token(authenticated_client: HorreumClient):
 @pytest.mark.asyncio
 async def test_missing_username_with_password():
     with pytest.raises(RuntimeError) as ex:
-        await new_horreum_client(base_url="http://localhost:8080", password=password)
+        await new_horreum_client(base_url="http://localhost:8080", credentials=HorreumCredentials(password=PASSWORD))
     assert str(ex.value) == "providing password without username, have you missed something?"
 
 
@@ -80,14 +100,14 @@ async def test_check_no_tests(authenticated_client: HorreumClient):
 
 
 @pytest.mark.asyncio
-async def test_check_create_test(authenticated_client: HorreumClient):
+async def test_check_create_test(custom_authenticated_client: HorreumClient):
     # Create new test
     t = Test(name="TestName", description="Simple test", owner="dev-team", access=ProtectedType_access.PUBLIC)
-    created = await authenticated_client.raw_client.api.test.post(t)
+    created = await custom_authenticated_client.raw_client.api.test.post(t)
     assert created is not None
-    assert (await authenticated_client.raw_client.api.test.get()).count == 1
+    assert (await custom_authenticated_client.raw_client.api.test.get()).count == 1
 
     # TODO: we could automate setup/teardown process
     # Delete test
-    await authenticated_client.raw_client.api.test.by_id(created.id).delete()
-    assert (await authenticated_client.raw_client.api.test.get()).count == 0
+    await custom_authenticated_client.raw_client.api.test.by_id(created.id).delete()
+    assert (await custom_authenticated_client.raw_client.api.test.get()).count == 0

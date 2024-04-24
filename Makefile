@@ -82,6 +82,10 @@ generate: tools ${OPENAPI_SPEC} ## Generate the Horreum client
 
 ##@ Example
 
-.PHONY: run-example
-run-example: ## Run basic example
+.PHONY: run-basic-example
+run-basic-example: ## Run basic example
 	cd examples && python basic_example.py
+
+.PHONY: run-read-only-example
+run-read-only-example: ## Run read-only example
+	cd examples && python read_only_example.py

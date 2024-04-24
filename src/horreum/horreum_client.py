@@ -1,14 +1,21 @@
 from importlib.metadata import version
+from typing import Optional
 
+import httpx
 from kiota_abstractions.authentication import AuthenticationProvider
 from kiota_abstractions.authentication.access_token_provider import AccessTokenProvider
 from kiota_abstractions.authentication.anonymous_authentication_provider import AnonymousAuthenticationProvider
 from kiota_abstractions.authentication.base_bearer_token_authentication_provider import (
     BaseBearerTokenAuthenticationProvider)
 from kiota_http.httpx_request_adapter import HttpxRequestAdapter
+from kiota_http.kiota_client_factory import KiotaClientFactory
 
+from .configs import HorreumCredentials, ClientConfiguration
 from .keycloak_access_provider import KeycloakAccessProvider
 from .raw_client.horreum_raw_client import HorreumRawClient
+
+DEFAULT_CONNECTION_TIMEOUT: int = 30
+DEFAULT_REQUEST_TIMEOUT: int = 100
 
 
 async def setup_auth_provider(base_url: str, username: str, password: str) -> AccessTokenProvider:
@@ -25,34 +32,48 @@ async def setup_auth_provider(base_url: str, username: str, password: str) -> Ac
 
 class HorreumClient:
     __base_url: str
-    __username: str
-    __password: str
+    __credentials: Optional[HorreumCredentials]
+    __client_config: Optional[ClientConfiguration]
+    __http_client: httpx.AsyncClient
 
     # Raw client, this could be used to interact with the low-level api
     raw_client: HorreumRawClient
-    auth_provider: AuthenticationProvider
+    # By default, set as anonymous authentication
+    auth_provider: AuthenticationProvider = AnonymousAuthenticationProvider()
 
-    def __init__(self, base_url: str, username: str = None, password: str = None):
+    def __init__(self, base_url: str, credentials: Optional[HorreumCredentials],
+                 client_config: Optional[ClientConfiguration]):
         self.__base_url = base_url
-        self.__username = username
-        self.__password = password
+        self.__credentials = credentials
+        self.__client_config = client_config
+
+        if client_config and client_config.http_client and client_config.use_default_middlewares:
+            self.__http_client = KiotaClientFactory.create_with_default_middleware(client=client_config.http_client,
+                                                                                   options=client_config.options)
+        else:
+            self.__http_client = client_config.http_client if client_config else None
 
     async def setup(self):
         """
         Set up the authentication provider, based on the Horreum configuration, and the low-level horreum api client
         """
 
-        if self.__username is not None:
-            # Bearer token authentication
-            access_provider = await setup_auth_provider(self.__base_url, self.__username, self.__password)
-            self.auth_provider = BaseBearerTokenAuthenticationProvider(access_provider)
-        elif self.__password is not None:
-            raise RuntimeError("providing password without username, have you missed something?")
-        else:
-            # Anonymous authentication
-            self.auth_provider = AnonymousAuthenticationProvider()
+        if self.__credentials:
+            if self.__credentials.username is not None:
+                # Bearer token authentication
+                access_provider = await setup_auth_provider(self.__base_url, self.__credentials.username,
+                                                            self.__credentials.password)
+                self.auth_provider = BaseBearerTokenAuthenticationProvider(access_provider)
+            elif self.__credentials.password is not None:
+                raise RuntimeError("providing password without username, have you missed something?")
 
-        req_adapter = HttpxRequestAdapter(self.auth_provider)
+        if self.__http_client:
+            req_adapter = HttpxRequestAdapter(authentication_provider=self.auth_provider,
+                                              http_client=self.__http_client)
+        else:
+            # rely on the Kiota default is not provided by user
+            req_adapter = HttpxRequestAdapter(authentication_provider=self.auth_provider)
+
         req_adapter.base_url = self.__base_url
 
         self.raw_client = HorreumRawClient(req_adapter)
@@ -66,15 +87,16 @@ class HorreumClient:
         return version("horreum")
 
 
-async def new_horreum_client(base_url: str, username: str = None, password: str = None) -> HorreumClient:
+async def new_horreum_client(base_url: str, credentials: Optional[HorreumCredentials] = None,
+                             client_config: Optional[ClientConfiguration] = None) -> HorreumClient:
     """
     Initialize the horreum client
     :param base_url: horreum api base url
-    :param username: auth username
-    :param password: auth password
+    :param credentials: horreum credentials in the form of username and pwd
+    :param client_config: inner http client configuration
     :return: HorreumClient instance
     """
-    client = HorreumClient(base_url, username, password)
+    client = HorreumClient(base_url, credentials=credentials, client_config=client_config)
     await client.setup()
 
     return client
