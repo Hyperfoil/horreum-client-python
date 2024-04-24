@@ -44,3 +44,6 @@ jobs:
           target-branch: 0.12.x
           pull-request: ${{ github.event.pull_request.url }}
           no-squash: ${{ env.NO_SQUASH_OPTION }}
+          strategy: ort
+          strategy-option: ours
+          enable-err-notification: true
