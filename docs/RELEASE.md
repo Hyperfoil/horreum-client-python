@@ -5,11 +5,22 @@ This document aims to describe how to perform a release of the Horreum python li
 The versioning pattern should follow the [Horreum](https://github.com/Hyperfoil/Horreum) 
 versioning scheme to keep coherence among all Horreum-related projects versions.
 
+## Prerequisites
+
+In order to perform the following release procedure correctly, certain prerequisites must be met:
+
+- Installed `git`.
+- Installed `poetry` python package, refer to the [doc](https://pypi.org/project/poetry/) for more details.
+- Installed `yq` linux tool, refer to its [doc](https://github.com/mikefarah/yq).
+- Enough privileges to push new branches in this repository.
+- Enough privileges to push new commit in the `main` branch (note this is temporary requirement, 
+in future direct pushes will be disallowed).
+
 ## Procedure
 
 Note that releases (i.e., actual _git tags_) are performed from the corresponding _stable_ branch.
 
-### Prepare the project to the next release cycle
+### Prepare the project for the next release cycle
 
 This procedure should be executed from the `main` branch, thus, checkout that branch. 
 
@@ -44,7 +55,7 @@ git push origin main
 
 # push newly created stable branch
 STABLE_BRANCH=...
-git checkout $STABLE_BRANCH && git push origin $STABLE_BRANCH
+git push origin $STABLE_BRANCH
 ```
 
 ### Tag a new version
@@ -77,8 +88,7 @@ Where:
 Commit and push changes:
 
 ```bash
-git add .
-git commit -m "Next is <NEXT_DEV_VERSION>"
+git commit -am "Next is <NEXT_DEV_VERSION>"
 
 git push origin $STABLE_BRANCH
 
