@@ -32,7 +32,10 @@ if [ "$DEV_MODE" != "false" ]; then
   echo "WARNING: Dev mode enabled..."
 fi
 
-# TODO: check there are no uncommited changes
+if [ -n "$(git status --porcelain)" ]; then
+  echo "ERROR: You have uncommitted changes, exiting ..."
+  exit 1
+fi
 
 echo "Preparing for next development cycle"
 
