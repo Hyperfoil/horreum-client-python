@@ -1,0 +1,42 @@
+# This workflow will update the Kiota generator version in the Makefile and it will
+# re-generate the client opening a pull request with those changes.
+name: Update Kiota generator version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: New Kiota version
+        required: true
+      branch:
+        description: Target branch to open the PR against
+        required: false
+        default: main
+jobs:
+  update-kiota:
+    name: update-kiota/${{ github.event.inputs.version }}/${{ github.event.inputs.branch }}
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.10"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          persist-credentials: false
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Update Kiota version
+        run: sed -i 's/KIOTA_VERSION ?= ".*"/KIOTA_VERSION ?= "v${{ github.event.inputs.version }}"/g' Makefile
+      - name: Create Pull Request
+        uses: gr2m/create-or-update-pull-request-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: Update Kiota version to ${{ github.event.inputs.version }}
+          body: >
+            Updating Kiota version to ${{ github.event.inputs.version }}.
+            Verify there are no breaking changes.
+          branch: update-kiota-version-${{ github.event.inputs.branch }}-${{ github.event.inputs.version }}
+          commit-message: Update kiota version to ${{ github.event.inputs.version }}
