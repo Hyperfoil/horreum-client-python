@@ -65,18 +65,17 @@ ${PROJECT_BIN}/kiota:
 tools: kiota ## Install external tools.
 
 ${OPENAPI_SPEC}:
-	@{\
-		set -e ;\
+	@if [ ! -f ${OPENAPI_SPEC} ]; then \
 		mkdir -p ${OPENAPI_PATH} ;\
-		echo "fetching openapi spec from ${HORREUM_OPENAPI_PATH}" ;\
-		curl -sSfL -o ${OPENAPI_SPEC} ${HORREUM_OPENAPI_PATH} ;\
-	}
+		echo "fetching openapi from ${HORREUM_OPENAPI_PATH}"; \
+		curl -sSfL -o $@ ${HORREUM_OPENAPI_PATH}; \
+	fi
 
 .PHONY: generate
 generate: tools ${OPENAPI_SPEC} ## Generate the Horreum client
 	@{\
 		set -e ;\
-		${PROJECT_BIN}/kiota generate -l python -c HorreumRawClient -n raw_client -d ${OPENAPI_PATH}/openapi.yaml -o ${GENERATED_CLIENT_PATH} ;\
+		${PROJECT_BIN}/kiota generate --clean-output --log-level Debug -l python -c HorreumRawClient -n raw_client -d ${OPENAPI_PATH}/openapi.yaml -o ${GENERATED_CLIENT_PATH} ;\
 	}
 
 

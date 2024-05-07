@@ -1,5 +1,6 @@
 import httpx
 import pytest
+from kiota_abstractions.api_error import APIError
 from kiota_abstractions.authentication import BaseBearerTokenAuthenticationProvider
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 from kiota_abstractions.headers_collection import HeadersCollection
@@ -111,3 +112,25 @@ async def test_check_create_test(custom_authenticated_client: HorreumClient):
     # Delete test
     await custom_authenticated_client.raw_client.api.test.by_id(created.id).delete()
     assert (await custom_authenticated_client.raw_client.api.test.get()).count == 0
+
+
+@pytest.mark.asyncio
+async def test_create_test_unauthorized(anonymous_client: HorreumClient):
+    # Create new test
+    t = Test(name="TestName", description="Simple test", owner="dev-team", access=ProtectedType_access.PUBLIC)
+    with pytest.raises(APIError) as ex:
+        await anonymous_client.raw_client.api.test.post(t)
+    assert ex.value.response_status_code == 401
+    assert ex.value.message == ("The server returned an unexpected status code and no error class is registered "
+                                "for this code 401")
+
+    assert (await anonymous_client.raw_client.api.test.get()).count == 0
+
+
+@pytest.mark.asyncio
+async def test_get_test_not_found(anonymous_client: HorreumClient):
+    with pytest.raises(APIError) as ex:
+        await anonymous_client.raw_client.api.test.by_id(999).get()
+    assert ex.value.response_status_code == 404
+    assert ex.value.message == ("The server returned an unexpected status code and no error class is registered "
+                                "for this code 404")
