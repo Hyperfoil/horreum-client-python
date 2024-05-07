@@ -42,7 +42,7 @@ async def create_schema_transformers(client: HorreumClient, schema_id: int, data
 
     transformer_data.extractors = extractors_data
 
-    transformer_id = await client.raw_client.api.schema.by_id_id(schema_id).transformers.post(transformer_data)
+    transformer_id = await client.raw_client.api.schema.by_id(schema_id).transformers.post(transformer_data)
     assert transformer_id > 0
     return transformer_id
 
@@ -105,7 +105,7 @@ async def delete_all(client: HorreumClient):
     print("cleaning up schemas")
     get_schemas = await client.raw_client.api.schema.get()
     for s in get_schemas.schemas:
-        await client.raw_client.api.schema.by_id_id(s.id).delete()
+        await client.raw_client.api.schema.by_id(s.id).delete()
 
     get_schemas = await client.raw_client.api.schema.get()
     assert get_schemas.count == 0
