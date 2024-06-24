@@ -58,7 +58,7 @@ if [ "$IS_DEVEL_VERSION" = "true" ]; then
 fi
 
 # Compute stable branch from next version
-STABLE_BRANCH=$(sed -E -e 's/([^.]+\.[^.]+).*/\1.x/' <<< "$NEW_VERSION")
+STABLE_BRANCH=$(sed -E -e 's/([^.]+\.[^.]+).*/\1/' <<< "$NEW_VERSION")
 
 # Update HORREUM_BRANCH on Makefile
 if [ "$UPDATE_HORREUM_BRANCH" = "true" ]; then
