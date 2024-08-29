@@ -1,13 +1,13 @@
 import httpx
 import pytest
 from kiota_abstractions.api_error import APIError
-from kiota_abstractions.authentication import BaseBearerTokenAuthenticationProvider
+from kiota_abstractions.authentication import BaseBearerTokenAuthenticationProvider, ApiKeyAuthenticationProvider
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 from kiota_abstractions.headers_collection import HeadersCollection
 from kiota_abstractions.method import Method
 from kiota_abstractions.request_information import RequestInformation
 
-from horreum import HorreumCredentials, ClientConfiguration
+from horreum import HorreumCredentials, ClientConfiguration, AuthMethod
 from horreum.horreum_client import new_horreum_client, HorreumClient
 from horreum.raw_client.api.test.test_request_builder import TestRequestBuilder
 from horreum.raw_client.models.protected_type_access import ProtectedType_access
@@ -90,7 +90,15 @@ async def test_check_auth_token(authenticated_client: HorreumClient):
 async def test_missing_username_with_password():
     with pytest.raises(RuntimeError) as ex:
         await new_horreum_client(base_url="http://localhost:8080", credentials=HorreumCredentials(password=PASSWORD))
-    assert str(ex.value) == "providing password without username, have you missed something?"
+    assert str(ex.value) == "provided password without username"
+
+
+@pytest.mark.asyncio
+async def test_basic_auth():
+    client = await new_horreum_client(base_url="http://localhost:8080",
+                                      credentials=HorreumCredentials(username=USERNAME, password=PASSWORD),
+                                      client_config=ClientConfiguration(auth_method=AuthMethod.BASIC))
+    assert isinstance(client.auth_provider, ApiKeyAuthenticationProvider)
 
 
 @pytest.mark.asyncio

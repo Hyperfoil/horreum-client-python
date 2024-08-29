@@ -1,8 +1,10 @@
 from importlib.metadata import version
 from typing import Optional
 
+import base64
 import httpx
-from kiota_abstractions.authentication import AuthenticationProvider
+import logging
+from kiota_abstractions.authentication import AuthenticationProvider, ApiKeyAuthenticationProvider, KeyLocation
 from kiota_abstractions.authentication.access_token_provider import AccessTokenProvider
 from kiota_abstractions.authentication.anonymous_authentication_provider import AnonymousAuthenticationProvider
 from kiota_abstractions.authentication.base_bearer_token_authentication_provider import (
@@ -10,13 +12,14 @@ from kiota_abstractions.authentication.base_bearer_token_authentication_provider
 from kiota_http.httpx_request_adapter import HttpxRequestAdapter
 from kiota_http.kiota_client_factory import KiotaClientFactory
 
-from .configs import HorreumCredentials, ClientConfiguration
+from .configs import HorreumCredentials, ClientConfiguration, AuthMethod
 from .keycloak_access_provider import KeycloakAccessProvider
 from .raw_client.horreum_raw_client import HorreumRawClient
 
 DEFAULT_CONNECTION_TIMEOUT: int = 30
 DEFAULT_REQUEST_TIMEOUT: int = 100
 
+logger = logging.getLogger(__name__)
 
 async def setup_auth_provider(base_url: str, username: str, password: str) -> AccessTokenProvider:
     # Use not authenticated client to fetch the auth mechanism
@@ -60,12 +63,18 @@ class HorreumClient:
 
         if self.__credentials:
             if self.__credentials.username is not None:
-                # Bearer token authentication
-                access_provider = await setup_auth_provider(self.__base_url, self.__credentials.username,
-                                                            self.__credentials.password)
-                self.auth_provider = BaseBearerTokenAuthenticationProvider(access_provider)
+                if self.__client_config is None or self.__client_config.auth_method == AuthMethod.BEARER:
+                    # Bearer token authentication
+                    access_provider = await setup_auth_provider(self.__base_url, self.__credentials.username, self.__credentials.password)
+                    self.auth_provider = BaseBearerTokenAuthenticationProvider(access_provider)
+                    logger.info('Using OIDC bearer token authentication')
+                elif self.__client_config.auth_method == AuthMethod.BASIC:
+                    # Basic authentication
+                    basic = "Basic " + base64.b64encode((self.__credentials.username + ":" + self.__credentials.password).encode()).decode()
+                    self.auth_provider = ApiKeyAuthenticationProvider(KeyLocation.Header, basic, "Authentication")
+                    logger.info('Using Basic HTTP authentication')
             elif self.__credentials.password is not None:
-                raise RuntimeError("providing password without username, have you missed something?")
+                raise RuntimeError("provided password without username")
 
         if self.__http_client:
             req_adapter = HttpxRequestAdapter(authentication_provider=self.auth_provider,
