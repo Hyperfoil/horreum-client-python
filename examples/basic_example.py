@@ -13,7 +13,7 @@ from horreum.raw_client.models.test import Test
 from horreum.raw_client.models.transformer import Transformer
 
 base_url = "http://localhost:8080"
-username = "user"
+username = "horreum.bootstrap"
 password = "secret"
 
 cleanup_data = True

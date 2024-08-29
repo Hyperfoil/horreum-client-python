@@ -8,7 +8,7 @@ DEFAULT_CONNECTION_TIMEOUT: int = 30
 DEFAULT_REQUEST_TIMEOUT: int = 100
 
 base_url = "http://localhost:8080"
-username = "user"
+username = "horreum.bootstrap"
 password = "secret"
 
 expected_server_version = "0.13.0"
