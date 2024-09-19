@@ -41,7 +41,7 @@ jobs:
       - name: Backporting
         uses: kiegroup/git-backporting@v4
         with:
-          target-branch: 0.14.x
+          target-branch: 0.15.x
           pull-request: ${{ github.event.pull_request.url }}
           no-squash: ${{ env.NO_SQUASH_OPTION }}
           strategy: ort
