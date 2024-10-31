@@ -10,6 +10,8 @@ from kiota_abstractions.request_information import RequestInformation
 from horreum import HorreumCredentials, ClientConfiguration, AuthMethod
 from horreum.horreum_client import new_horreum_client, HorreumClient
 from horreum.raw_client.api.test.test_request_builder import TestRequestBuilder
+from horreum.raw_client.api.user.apikey.apikey_post_request_body import ApikeyPostRequestBody
+from horreum.raw_client.models.key_type import KeyType
 from horreum.raw_client.models.protected_type_access import ProtectedType_access
 from horreum.raw_client.models.test import Test
 
@@ -107,6 +109,28 @@ async def test_check_no_tests(authenticated_client: HorreumClient):
     config = RequestConfiguration(query_parameters=query_params, headers=HeadersCollection())
     assert (await authenticated_client.raw_client.api.test.get(config)).count == 0
 
+
+@pytest.mark.asyncio
+async def test_api_key(custom_authenticated_client: HorreumClient):
+    key_request = ApikeyPostRequestBody(name="python test key", type=KeyType.USER)
+    key = await custom_authenticated_client.raw_client.api.user.apikey.post(key_request)
+    assert key is not None
+
+    key_client = await new_horreum_client(base_url="http://localhost:8080",
+                                          credentials=HorreumCredentials(apikey=key),
+                                          client_config=ClientConfiguration(auth_method=AuthMethod.API_KEY))
+
+    # use key to retrieve list of keys
+    assert len(await key_client.raw_client.api.user.apikey.get()) >= 1
+
+    wrong_key_client = await new_horreum_client(base_url="http://localhost:8080",
+                                                credentials=HorreumCredentials(apikey=key.swapcase()),
+                                                client_config=ClientConfiguration(auth_method=AuthMethod.API_KEY))
+
+    # wrong key does not authenticate
+    with pytest.raises(APIError) as ex: (await wrong_key_client.raw_client.api.user.apikey.get())
+    assert ex.value.response_status_code == 401
+    
 
 @pytest.mark.asyncio
 async def test_check_create_test(custom_authenticated_client: HorreumClient):
