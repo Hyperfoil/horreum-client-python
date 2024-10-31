@@ -10,10 +10,12 @@ from kiota_abstractions.request_option import RequestOption
 class HorreumCredentials:
     username: str = None
     password: str = None
+    apikey: str = None
 
 class AuthMethod(Enum):
     BEARER = 1
     BASIC = 2
+    API_KEY = 3
 
 @dataclass
 class ClientConfiguration:

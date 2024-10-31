@@ -62,7 +62,12 @@ class HorreumClient:
         """
 
         if self.__credentials:
-            if self.__credentials.username is not None:
+            if self.__credentials.apikey is not None and (self.__client_config is None or self.__client_config.auth_method == AuthMethod.API_KEY):
+                # API key authentication
+                self.auth_provider = ApiKeyAuthenticationProvider(KeyLocation.Header, self.__credentials.apikey, "X-Horreum-API-Key")
+                logger.info('Using API Key authentication')
+
+            elif self.__credentials.username is not None:
                 if self.__client_config is None or self.__client_config.auth_method == AuthMethod.BEARER:
                     # Bearer token authentication
                     access_provider = await setup_auth_provider(self.__base_url, self.__credentials.username, self.__credentials.password)
