@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "horreum"
-version = "0.16"
+version = "0.16.1.dev"
 description = "Horreum python library"
 keywords = ["horreum", "performance", "change-detection"]
 authors = ["Andrea Lamparelli <alampare@redhat.com>"]
