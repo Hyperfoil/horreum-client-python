@@ -1,9 +1,9 @@
+import base64
+import logging
 from importlib.metadata import version
 from typing import Optional
 
-import base64
 import httpx
-import logging
 from kiota_abstractions.authentication import AuthenticationProvider, ApiKeyAuthenticationProvider, KeyLocation
 from kiota_abstractions.authentication.access_token_provider import AccessTokenProvider
 from kiota_abstractions.authentication.anonymous_authentication_provider import AnonymousAuthenticationProvider
@@ -21,16 +21,17 @@ DEFAULT_REQUEST_TIMEOUT: int = 100
 
 logger = logging.getLogger(__name__)
 
-async def setup_auth_provider(base_url: str, username: str, password: str) -> AccessTokenProvider:
+
+async def setup_auth_provider(base_url: str, username: str, password: str, http_client: httpx.AsyncClient = None,
+                              verify: bool = True) -> AccessTokenProvider:
     # Use not authenticated client to fetch the auth mechanism
     auth_provider = AnonymousAuthenticationProvider()
-    req_adapter = HttpxRequestAdapter(auth_provider)
+    req_adapter = HttpxRequestAdapter(authentication_provider=auth_provider, http_client=http_client)
     req_adapter.base_url = base_url
     auth_client = HorreumRawClient(req_adapter)
 
     auth_config = await auth_client.api.config.keycloak.get()
-    # TODO: we could generalize using a generic OIDC client
-    return KeycloakAccessProvider(auth_config, username, password)
+    return KeycloakAccessProvider(auth_config, username, password, verify)
 
 
 class HorreumClient:
@@ -49,6 +50,7 @@ class HorreumClient:
         self.__base_url = base_url
         self.__credentials = credentials
         self.__client_config = client_config
+        self.__auth_verify = client_config.auth_verify if client_config is not None else True
 
         if client_config and client_config.http_client and client_config.use_default_middlewares:
             self.__http_client = KiotaClientFactory.create_with_default_middleware(client=client_config.http_client,
@@ -62,20 +64,25 @@ class HorreumClient:
         """
 
         if self.__credentials:
-            if self.__credentials.apikey is not None and (self.__client_config is None or self.__client_config.auth_method == AuthMethod.API_KEY):
+            if self.__credentials.apikey is not None and (
+                    self.__client_config is None or self.__client_config.auth_method == AuthMethod.API_KEY):
                 # API key authentication
-                self.auth_provider = ApiKeyAuthenticationProvider(KeyLocation.Header, self.__credentials.apikey, "X-Horreum-API-Key")
+                self.auth_provider = ApiKeyAuthenticationProvider(KeyLocation.Header, self.__credentials.apikey,
+                                                                  "X-Horreum-API-Key")
                 logger.info('Using API Key authentication')
 
             elif self.__credentials.username is not None:
                 if self.__client_config is None or self.__client_config.auth_method == AuthMethod.BEARER:
                     # Bearer token authentication
-                    access_provider = await setup_auth_provider(self.__base_url, self.__credentials.username, self.__credentials.password)
+                    access_provider = await setup_auth_provider(self.__base_url, self.__credentials.username,
+                                                                self.__credentials.password, self.__http_client,
+                                                                self.__auth_verify)
                     self.auth_provider = BaseBearerTokenAuthenticationProvider(access_provider)
                     logger.info('Using OIDC bearer token authentication')
                 elif self.__client_config.auth_method == AuthMethod.BASIC:
                     # Basic authentication
-                    basic = "Basic " + base64.b64encode((self.__credentials.username + ":" + self.__credentials.password).encode()).decode()
+                    basic = "Basic " + base64.b64encode(
+                        (self.__credentials.username + ":" + self.__credentials.password).encode()).decode()
                     self.auth_provider = ApiKeyAuthenticationProvider(KeyLocation.Header, basic, "Authentication")
                     logger.info('Using Basic HTTP authentication')
             elif self.__credentials.password is not None:
