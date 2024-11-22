@@ -12,7 +12,7 @@ class KeycloakAccessProvider(AccessTokenProvider):
     username: str
     password: str
 
-    def __init__(self, config: KeycloakConfig, username: str, password: str):
+    def __init__(self, config: KeycloakConfig, username: str, password: str, verify: bool = True):
         super()
         self.config = config
         self.username = username
@@ -20,7 +20,8 @@ class KeycloakAccessProvider(AccessTokenProvider):
         self.keycloak_openid = KeycloakOpenID(
             server_url=config.url,
             client_id=config.client_id,
-            realm_name=config.realm
+            realm_name=config.realm,
+            verify=verify
         )
 
     async def get_authorization_token(self, uri: str, additional_authentication_context: Dict[str, Any] = {}) -> str:
