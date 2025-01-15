@@ -13,9 +13,9 @@
 ---
 ## What is Horreum Python Client?
 
-Horreum python client is a high-level python library to interact with [Horreum](#what-is-horreum) web server.
+Horreum python client is a high-level python library to interact with [Horreum](#what-is-horreum).
 
-The raw client is generated using [kiota](https://github.com/microsoft/kiota) openapi generator tool starting from 
+The raw client is generated using [kiota](https://github.com/microsoft/kiota) OpenAPI generator tool starting from
 the [Horreum OpenAPI spec](https://github.com/Hyperfoil/Horreum/blob/master/docs/site/content/en/openapi/openapi.yaml).
 
 Refer to the [get started guide](docs/GET_STARTED.md) for comprehensive instructions on installing and utilizing this library.
@@ -24,23 +24,26 @@ Refer to the [get started guide](docs/GET_STARTED.md) for comprehensive instruct
 
 [Horreum](https://github.com/Hyperfoil/Horreum) is a service for storing performance data and regression analysis.
 
-Please, visit our project website: 
+## Contributing
 
-[https://horreum.hyperfoil.io](https://horreum.hyperfoil.io)
+Please check the [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-for more information.
+### If you have any idea or doubt 👇
 
-[Horreum](https://github.com/Hyperfoil/Horreum) is a [Quarkus](https://quarkus.io/) based application which uses
-[Quinoa](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/) as its [Node.js](https://nodejs.org/en) engine.
+* [Ask a question](https://github.com/Hyperfoil/horreum-client-python/discussions)
+* [Raise an issue](https://github.com/Hyperfoil/horreum-client-python/issues)
+* [Feature request](https://github.com/Hyperfoil/horreum-client-python/issues)
+* [Code submission](https://github.com/Hyperfoil/horreum-client-python/pulls)
 
-This project is about providing a simplified setup and examples to use 
-[Horreum](https://github.com/Hyperfoil/Horreum) using the [Python](https://www.python.org/) programming language.
+Contribution is the best way to support and get involved in community !
 
-## 🧑‍💻 Contributing
+Please, consult our [Code of Conduct](./CODE_OF_CONDUCT.md) policies for interacting in our
+community.
 
-Contributions to `horreum-client-python` Please check our [CONTRIBUTING.md](./CONTRIBUTING.md)
+Consider giving the project a [star](https://github.com/Hyperfoil/horreum-client-python/stargazers) on
+[GitHub](https://github.com/Hyperfoil/horreum-client-python/) if you find it useful.
 
-### Development
+## Development
 
 Install poetry dependency (consider using Python virtual environments):
 ```bash
@@ -58,7 +61,7 @@ Build the library using `poetry`:
 poetry build
 ```
 
-#### Tests
+### Tests
 Tests can be executed using [nox](https://nox.thea.codes/en/stable/) sessions.
 
 To install it in your local environment, please run:
@@ -77,7 +80,7 @@ And execute them by running:
 nox -s <session>
 ```
 
-Right now integrations tests are not fully automated, therefore you need to start up the Horreum server manually, 
+Right now integrations tests are not fully automated, therefore you need to start up the Horreum server manually,
 you can check more details in [Horreum README](https://github.com/Hyperfoil/Horreum/blob/master/README.md#getting-started-with-development-server).
 
 > **_NOTE_**: The database should be empty to get all tests working
@@ -87,20 +90,8 @@ Once the Horreum server is up and running on `localhost:8080`, you can trigger i
 nox -s its
 ```
 
-### If you have any idea or doubt 👇
-
-* [Ask a question](https://github.com/Hyperfoil/horreum-client-python/discussions)
-* [Raise an issue](https://github.com/Hyperfoil/horreum-client-python/issues)
-* [Feature request](https://github.com/Hyperfoil/horreum-client-python/issues)
-* [Code submission](https://github.com/Hyperfoil/horreum-client-python/pulls)
-
-Contribution is the best way to support and get involved in community !
-
-Please, consult our [Code of Conduct](./CODE_OF_CONDUCT.md) policies for interacting in our
-community.
-
-Consider giving the project a [star](https://github.com/Hyperfoil/horreum-client-python/stargazers) on
-[GitHub](https://github.com/Hyperfoil/horreum-client-python/) if you find it useful.
+## Release
+Please check the [RELEASE.md](./docs/RELEASE.md)
 
 ## License
 
