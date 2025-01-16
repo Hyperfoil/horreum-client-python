@@ -10,6 +10,7 @@ on:
       - 0.14.x
       - 0.15.x
       - 0.16.x
+      - 0.17.x
   pull_request:
 jobs:
   test:
