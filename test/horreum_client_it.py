@@ -12,8 +12,8 @@ from horreum.horreum_client import new_horreum_client, HorreumClient
 from horreum.raw_client.api.test.test_request_builder import TestRequestBuilder
 from horreum.raw_client.api.user.apikey.apikey_post_request_body import ApikeyPostRequestBody
 from horreum.raw_client.models.key_type import KeyType
-from horreum.raw_client.models.protected_type_access import ProtectedType_access
 from horreum.raw_client.models.test import Test
+from horreum.raw_client.models.test_access import Test_access
 
 DEFAULT_CONNECTION_TIMEOUT: int = 30
 DEFAULT_REQUEST_TIMEOUT: int = 100
@@ -135,7 +135,7 @@ async def test_api_key(custom_authenticated_client: HorreumClient):
 @pytest.mark.asyncio
 async def test_check_create_test(custom_authenticated_client: HorreumClient):
     # Create new test
-    t = Test(name="TestName", description="Simple test", owner="dev-team", access=ProtectedType_access.PUBLIC)
+    t = Test(name="TestName", description="Simple test", owner="dev-team", access=Test_access.PROTECTED.PUBLIC)
     created = await custom_authenticated_client.raw_client.api.test.post(t)
     assert created is not None
     assert (await custom_authenticated_client.raw_client.api.test.get()).count == 1
@@ -149,7 +149,7 @@ async def test_check_create_test(custom_authenticated_client: HorreumClient):
 @pytest.mark.asyncio
 async def test_create_test_unauthorized(anonymous_client: HorreumClient):
     # Create new test
-    t = Test(name="TestName", description="Simple test", owner="dev-team", access=ProtectedType_access.PUBLIC)
+    t = Test(name="TestName", description="Simple test", owner="dev-team", access=Test_access.PROTECTED.PUBLIC)
     with pytest.raises(APIError) as ex:
         await anonymous_client.raw_client.api.test.post(t)
     assert ex.value.response_status_code == 401
