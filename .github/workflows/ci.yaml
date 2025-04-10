@@ -5,12 +5,7 @@ on:
   push:
     branches:
       - main
-      - 0.12.x
-      - 0.13.x
-      - 0.14.x
-      - 0.15.x
-      - 0.16.x
-      - 0.17.x
+      - 0.18.x
   pull_request:
 jobs:
   test:
