@@ -69,7 +69,7 @@ echo "Updating project version to $NEW_VERSION ..."
 poetry version "$NEW_VERSION" -v
 
 # Generate raw client
-make generate
+make clean clean-bin generate
 
 if [ "$DO_TAG" = "true" ] && [ "$IS_DEVEL_VERSION" = "false" ]; then
   echo "Tagging version v$NEW_VERSION"
