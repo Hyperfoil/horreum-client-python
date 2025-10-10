@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - 0.18.x
+      - 0.19.x
   pull_request:
 jobs:
   test:
